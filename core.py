@@ -54,6 +54,23 @@ def transition(state, action):
     s['rev']+=1
     return s
 
+def lesson_body(page):
+    """Render explicit text blocks; escape content before applying Telegram HTML."""
+    if 'blocks' not in page:
+        return escape(page['text'])
+    paragraphs = []
+    for block in page['blocks']:
+        heading = block.get('heading', '')
+        body = block.get('text', '')
+        parts = []
+        if heading:
+            parts.append('<b>' + escape(heading) + '</b>')
+        if body:
+            parts.append(escape(body))
+        if parts:
+            paragraphs.append('\n'.join(parts))
+    return '\n\n'.join(paragraphs)
+
 def view(state):
     """Return image, formatted HTML text, and rows of (label, action)."""
     s=state;screen=s['screen'];rows=[]
@@ -69,7 +86,7 @@ def view(state):
         image=m['image']
         text=(f'<b>🍃 МОДУЛЬ {s["module"]+1:02} · {escape(m["title"])}</b>\n\n'
               f'━━ СТРАНИЦА {s["page"]+1}/{len(m["pages"])} ━━\n\n'
-              f'<b>{s["page"]+1:02} · {escape(p["title"])}</b>\n\n'+escape(p['text']))
+              f'<b>{s["page"]+1:02} · {escape(p["title"])}</b>\n\n'+lesson_body(p))
         nav=[]
         if s['page']:nav.append(('Назад','back'))
         nav.append(('В меню' if s['page']==len(m['pages'])-1 else 'Далее','next'))
@@ -99,3 +116,4 @@ class Store:
             self.db.execute('INSERT INTO users VALUES (?,?) ON CONFLICT(id) DO UPDATE SET state=excluded.state',
                             (uid,json.dumps(state,ensure_ascii=False)))
     def close(self):self.db.close()
+

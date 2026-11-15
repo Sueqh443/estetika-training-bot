@@ -6,7 +6,7 @@ import json
 import sqlite3
 
 ROOT = Path(__file__).resolve().parent
-COURSE = json.loads((ROOT / 'data/course.json').read_text(encoding='utf-8'))
+COURSE = json.loads((ROOT / 'course.json').read_text(encoding='utf-8'))
 
 class ActionError(ValueError):
     pass
